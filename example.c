@@ -15,11 +15,16 @@ module_param(log, charp, 0);
 #define DEFNAME "inputFile.txt"; // Default value for input file.
 #define DEFLOG "./module.log" // Default value for output file.
 
-static int __init kread_init(void) { 
-	struct file *f; 
-	size_t n;
-	char buff[BUFF_LEN + 1] = DEFNAME; // Using the default value. 
+struct file *f; 
+size_t n;
 
+char buff[BUFF_LEN + 1] = DEFNAME; // Using the default value. 
+char buffOutput[BUFF_LEN + 1] = DEFLOG; // Using the default value.
+
+loff_t offset = 0; 
+mm_segment_t fs;
+
+static int __init kread_init(void) { 
 	if(file != NULL) // If set module parameter "file".
 		strcpy(buff, file);
 
@@ -33,10 +38,6 @@ static int __init kread_init(void) {
 	n = kernel_read(f, 0, buff, BUFF_LEN);
 
 	filp_close(f, NULL); // Close the file.
-	
-	loff_t offset = 0; 
-	mm_segment_t fs;
-	char buffOutput[BUFF_LEN + 1] = DEFLOG; // Using the default value.
 
 	if(log != NULL) // If set module parameter "log".
 		strcpy(buffOutput, log); 
@@ -44,7 +45,7 @@ static int __init kread_init(void) {
    	f = filp_open(buffOutput, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR); // Open the file for write.
 
 	if(IS_ERR(f)) { 
-		printk("file open failed: %s\n", buff2); 
+		printk("file open failed: %s\n", buffOutput); 
 		return -ENOENT; 
 	}
  
@@ -63,3 +64,4 @@ static int __init kread_init(void) {
 } 
 
 module_init(kread_init);
+MODULE_LICENSE("GPL");
