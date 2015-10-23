@@ -53,7 +53,7 @@ static int __init kread_init(void) {
 	set_fs(get_ds()); // Without it does not work.
 	strcpy(buffOutput, buff); // Without it does not work.
 	if((n = vfs_write(f, buffOutput, strlen(buffOutput), &offset)) != strlen(buffOutput)) { 
-		printk("failed to write: %d\n", n); 
+		printk("failed to write: %zu\n", n); 
 		return -EIO; 
 	} 
 	set_fs(fs); // Without it does not work.
