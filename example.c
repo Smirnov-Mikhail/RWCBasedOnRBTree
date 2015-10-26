@@ -4,7 +4,7 @@
 #include <linux/uaccess.h> 
 #include <linux/string.h> 
 
-// Number of bits for reading.
+// Number of bytes for reading.
 int numberOfBytes = 10;
 
 // Path to input file.
@@ -62,7 +62,7 @@ static int __init kread_init(void) {
 	if (isOpenIncorrect(fileOutput, pathToOutputFile, fs))
 		return -ENOENT;
 	
-	move = vfs_llseek(fileInput, numberOfBits, 0); // 0 means SEEK_SET. (set in begin of file
+	move = vfs_llseek(fileInput, numberOfBytes, 0); // 0 means SEEK_SET. (set in begin of file
 	while (1) {
 		n = vfs_read(fileInput, buff, move, &file_offset);
 		if (n == 0) { // If the file is ended.
