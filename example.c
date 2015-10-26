@@ -67,7 +67,6 @@ static int __init kread_init(void) {
 		n = vfs_read(fileInput, buff, move, &file_offset);
 		if (n == 0) { // If the file is ended.
 			if (strlen(str) > 0) {
-				printk("ALO %s\n", str);
 				vfs_write(fileOutput, "New line: ", 10, &offset);
 				vfs_write(fileOutput, str, strlen(str), &offset);
 			}
@@ -76,8 +75,6 @@ static int __init kread_init(void) {
 
 		for (j = 0; j < n; j++) {
 			if (buff[j] == '\n') {
-				printk("buff %s\n", buff);
-				printk("lol %s\n", str);
 				vfs_write(fileOutput, "New line: ", 10, &offset);
 				vfs_write(fileOutput, str, strlen(str), &offset); // Main string.
 				vfs_write(fileOutput, "\n", 1, &offset);
@@ -90,7 +87,6 @@ static int __init kread_init(void) {
 				i++;
 			}
 		}
-		printk("APY %s\n", str);
 	}
 	set_fs(fs);
 
