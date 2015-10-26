@@ -5,7 +5,7 @@
 #include <linux/string.h> 
 
 // Number of bits for reading.
-int numberOfBits = 10;
+int numberOfBytes = 10;
 
 // Path to input file.
 static char* file = NULL; 
