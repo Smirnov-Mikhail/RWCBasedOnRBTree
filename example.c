@@ -2,7 +2,9 @@
 #include <linux/fs.h> 
 #include <linux/sched.h> 
 #include <linux/uaccess.h> 
-#include <linux/string.h> 
+#include <linux/string.h>
+#include <linux/list.h>
+#include <linux/slab.h>
 
 // Number of bytes for reading.
 int numberOfBytes = 10;
@@ -33,15 +35,24 @@ bool isOpenIncorrect(struct file *file, char pathToFile[], mm_segment_t fs);
 // Check that the file is empty.
 bool fileIsEmpty(struct file *file, char pathToFile[], long *length);
 
+struct data {
+	char value[BUFF_LEN + 1];
+	struct list_head list;
+};
+
 static int __init kread_init(void) {
-	int j = 0;
-	int i = 0;
+	unsigned int j = 0;
+	unsigned int i = 0;
 	size_t n;
 
 	loff_t offset = 0; // For write.
 	loff_t file_offset = 0; // For read.
 	mm_segment_t fs;
 	long move; // Step at reading.
+	
+	struct list_head *iter, *iter_safe;
+	struct data *item;
+	LIST_HEAD(list);
 
 	fs = get_fs(); 
 	set_fs(get_ds()); 
@@ -78,6 +89,11 @@ static int __init kread_init(void) {
 				vfs_write(fileOutput, "New line: ", 10, &offset);
 				vfs_write(fileOutput, str, strlen(str), &offset); // Main string.
 				vfs_write(fileOutput, "\n", 1, &offset);
+
+				item = kmalloc(sizeof(*item), GFP_KERNEL);
+				strcpy(item->value, str);
+				list_add(&(item->list), &list); // Add to list.
+				
 				i = 0;
 				strcpy(str, ""); // Clean the string.
 			}
@@ -92,6 +108,28 @@ static int __init kread_init(void) {
 
 	filp_close(fileInput, NULL); // Close the input file.
 	filp_close(fileOutput, NULL); // Close the output file.
+
+	// Delete "20".
+	list_for_each_safe(iter, iter_safe, &list) {
+		item = list_entry(iter, struct data, list);
+		if (strcmp(item->value, "20") == 0) {
+			list_del(iter);
+			kfree(item);
+		}
+	}
+	
+	// Print list.
+	list_for_each(iter, &list) {
+		item = list_entry(iter, struct data, list);
+		printk("%s ", item->value);
+	}
+
+	// Delete list.
+	list_for_each_safe(iter, iter_safe, &list) {
+		item = list_entry(iter, struct data, list);
+		list_del(iter);
+		kfree(item);
+	}
 
 	return -EPERM; 
 }
