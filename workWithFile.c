@@ -1,10 +1,3 @@
-#include <linux/module.h> 
-#include <linux/fs.h> 
-#include <linux/sched.h> 
-#include <linux/uaccess.h> 
-#include <linux/string.h>
-#include <linux/list.h>
-#include <linux/slab.h>
 #include "workWithFile.h"
 
 bool isOpenIncorrect(struct file *file, char pathToFile[], mm_segment_t fs) 

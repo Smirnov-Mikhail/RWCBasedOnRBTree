@@ -23,9 +23,12 @@ struct file *fileOutput;
 char buff[BUFF_LEN + 1]; // Buffer for reading the memory unit from file.
 char str[BUFF_LEN + 1]; // Buffer for forming one line.
 
+// From char* to uint64_t.
+int atoiFor_uint64(char *str);
+
 struct data 
 {
-	char value[BUFF_LEN + 1];
+	uint64_t value;
 	struct list_head list;
 };
 
@@ -86,7 +89,7 @@ static int __init kread_init(void)
 				vfs_write(fileOutput, "\n", 1, &offset);
 
 				item = kmalloc(sizeof(*item), GFP_KERNEL);
-				strcpy(item->value, str);
+				item->value = atoiFor_uint64(str);
 				list_add(&(item->list), &list); // Add to list.
 				
 				i = 0;
@@ -104,15 +107,20 @@ static int __init kread_init(void)
 
 	filp_close(fileInput, NULL); // Close the input file.
 	filp_close(fileOutput, NULL); // Close the output file.
-
-	// Delete "20".
+	
+	// Add "15" before "30" and add "2^30" after "30".
 	list_for_each_safe(iter, iter_safe, &list) 
 	{
 		item = list_entry(iter, struct data, list);
-		if (strcmp(item->value, "20") == 0) 
-		{
-			list_del(iter);
-			kfree(item);
+		if (item->value == 30) 
+		{	
+			item = kmalloc(sizeof(*item), GFP_KERNEL);
+			item->value = 0x0000000040000000;
+			list_add(&(item->list), iter); // Add 2^30.
+			
+			item = kmalloc(sizeof(*item), GFP_KERNEL);
+			item->value = 15;
+			list_add(&(item->list), iter->prev); // Add 15.
 		}
 	}
 	
@@ -120,7 +128,7 @@ static int __init kread_init(void)
 	list_for_each(iter, &list) 
 	{
 		item = list_entry(iter, struct data, list);
-		printk("%s ", item->value);
+		printk("%lld\n", item->value);
 	}
 
 	// Delete list.
@@ -132,6 +140,28 @@ static int __init kread_init(void)
 	}
 	
 	return 0; 
+}
+
+int atoiFor_uint64(char *str)
+{
+	uint64_t res = 0;
+    uint64_t sign = 1;
+    int i = 0;
+    
+    if (strlen(str) == 0)
+       return 0;
+ 
+    // If number is negative, then update sign.
+    if (str[0] == '-')
+    {
+        sign = -1;
+        i++;
+    }
+ 
+    for (; str[i] != '\0'; ++i)
+        res = res * 10 + str[i] - '0';
+ 
+    return sign * res;
 }
 
 static void __exit kread_exit(void)
