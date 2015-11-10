@@ -26,12 +26,6 @@ char str[BUFF_LEN + 1]; // Buffer for forming one line.
 // From char* to uint64_t.
 int atoiFor_uint64(char *str);
 
-struct data 
-{
-	uint64_t value;
-	struct list_head list;
-};
-
 static int __init kread_init(void) 
 { 
 	unsigned int j = 0;
@@ -43,13 +37,13 @@ static int __init kread_init(void)
 	mm_segment_t fs;
 	long move; // Step at reading.
 	
-	struct list_head *iter, *iter_safe;
-	struct data *item;
-	LIST_HEAD(list);
+	// Initialization of rbTree.
+	struct dataRBTree *itemRBTree;
+	struct rb_root rbTree = RB_ROOT;
 
 	fs = get_fs(); 
 	set_fs(get_ds()); 
-
+	
 	if (file != NULL) // If set module parameter "file".
 		strcpy(pathToInputFile, file);
 
@@ -66,7 +60,7 @@ static int __init kread_init(void)
 	if (isOpenIncorrect(fileOutput, pathToOutputFile, fs))
 		return -ENOENT;
 	
-	move = vfs_llseek(fileInput, numberOfBytes, 0); // 0 means SEEK_SET. (set in begin of file
+	move = vfs_llseek(fileInput, numberOfBytes, 0); // 0 means SEEK_SET. (set in begin of file)
 	while (1) 
 	{
 		n = vfs_read(fileInput, buff, move, &file_offset);
@@ -88,9 +82,9 @@ static int __init kread_init(void)
 				vfs_write(fileOutput, str, strlen(str), &offset); // Main string.
 				vfs_write(fileOutput, "\n", 1, &offset);
 
-				item = kmalloc(sizeof(*item), GFP_KERNEL);
-				item->value = atoiFor_uint64(str);
-				list_add(&(item->list), &list); // Add to list.
+				itemRBTree = kmalloc(sizeof(*itemRBTree), GFP_KERNEL);
+				itemRBTree->value = atoiFor_uint64(str);
+				rbTreeInsert(&rbTree, itemRBTree);
 				
 				i = 0;
 				strcpy(str, ""); // Clean the string.
@@ -107,37 +101,8 @@ static int __init kread_init(void)
 
 	filp_close(fileInput, NULL); // Close the input file.
 	filp_close(fileOutput, NULL); // Close the output file.
-	
-	// Add "15" before "30" and add "2^30" after "30".
-	list_for_each_safe(iter, iter_safe, &list) 
-	{
-		item = list_entry(iter, struct data, list);
-		if (item->value == 30) 
-		{	
-			item = kmalloc(sizeof(*item), GFP_KERNEL);
-			item->value = 0x0000000040000000;
-			list_add(&(item->list), iter); // Add 2^30.
-			
-			item = kmalloc(sizeof(*item), GFP_KERNEL);
-			item->value = 15;
-			list_add(&(item->list), iter->prev); // Add 15.
-		}
-	}
-	
-	// Print list.
-	list_for_each(iter, &list) 
-	{
-		item = list_entry(iter, struct data, list);
-		printk("%lld\n", item->value);
-	}
 
-	// Delete list.
-	list_for_each_safe(iter, iter_safe, &list) 
-	{
-		item = list_entry(iter, struct data, list);
-		list_del(iter);
-		kfree(item);
-	}
+	printTree(&rbTree, 0);
 	
 	return 0; 
 }
@@ -166,5 +131,5 @@ int atoiFor_uint64(char *str)
 
 static void __exit kread_exit(void)
 {
-	printk("module is off");
+	printk("module is off\n");
 }

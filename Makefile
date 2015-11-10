@@ -6,7 +6,7 @@ EXTRA_CFLAGS += -g -Wall -Werror
 OBJS = workingWithFile.o
 
 obj-m += example.o
-example-objs := main.o workWithFile.o
+example-objs := main.o workWithFile.o rbTree.o
 
 all:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
