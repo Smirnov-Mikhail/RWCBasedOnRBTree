@@ -8,7 +8,7 @@ struct dataRBTree *rbTreeSearch(struct rb_root *root, ElementType value)
 	while (node)
 	{
 		struct dataRBTree *data = rb_entry(node, struct dataRBTree, node);
-
+		
 		if (data->value > value)
 			node = node->rb_left;
 		else if (data->value < value)
@@ -28,7 +28,7 @@ void rbTreeInsert(struct rb_root *root, struct dataRBTree *data)
   		struct dataRBTree *this = container_of(*new, struct dataRBTree, node);
 
 		parent = *new;
-  		if (this->value < 0)
+  		if (this->value > data->value)
   			new = &((*new)->rb_left);
   		else
   			new = &((*new)->rb_right);

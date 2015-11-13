@@ -1,4 +1,5 @@
 #include "main.h"
+#include <linux/rbtree.h>	
 
 // Number of bytes for reading.
 int numberOfBytes = 10;
@@ -40,6 +41,7 @@ static int __init kread_init(void)
 	// Initialization of rbTree.
 	struct dataRBTree *itemRBTree;
 	struct rb_root rbTree = RB_ROOT;
+	struct rb_node *node;
 
 	fs = get_fs(); 
 	set_fs(get_ds()); 
@@ -101,8 +103,16 @@ static int __init kread_init(void)
 
 	filp_close(fileInput, NULL); // Close the input file.
 	filp_close(fileOutput, NULL); // Close the output file.
-
+	
+	printk("Root\n");
+	for (node = rb_first(&rbTree); node; node = rb_next(node))
+		printk("key=%lld\n", rb_entry(node, struct dataRBTree, node)->value);
+	printk("Pre-order\n");
+	printTree(&rbTree, -1);
+	printk("In-order\n");
 	printTree(&rbTree, 0);
+	printk("Post-order\n");
+	printTree(&rbTree, 1);
 	
 	return 0; 
 }
