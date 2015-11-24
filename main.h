@@ -1,4 +1,5 @@
-#include <linux/module.h> 
+#include <linux/module.h>
+#include <linux/kernel.h> // For kstrtoll.
 #include <linux/fs.h> 
 #include <linux/sched.h> 
 #include <linux/uaccess.h> 

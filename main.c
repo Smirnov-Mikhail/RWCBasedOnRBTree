@@ -22,10 +22,8 @@ struct file *fileInput;
 struct file *fileOutput;
 	
 char buff[BUFF_LEN + 1]; // Buffer for reading the memory unit from file.
-char str[BUFF_LEN + 1]; // Buffer for forming one line.
-
-// From char* to uint64_t.
-int atoiFor_uint64(char *str);
+char strLba[BUFF_LEN + 1]; // Buffer for forming one element of rbtree.
+char str[BUFF_LEN + 1]; // Buffer for forming one element of rbtree.
 
 static int __init kread_init(void) 
 { 
@@ -38,6 +36,8 @@ static int __init kread_init(void)
 	mm_segment_t fs;
 	long move; // Step at reading.
 	
+	//int startRWC = 0;
+	int endRWC = 0;
 	// Initialization of rbTree.
 	struct dataRBTree *itemRBTree;
 	struct rb_root rbTree = RB_ROOT;
@@ -78,24 +78,37 @@ static int __init kread_init(void)
 
 		for (j = 0; j < n; j++) 
 		{
-			if (buff[j] == '\n') 
+			if (buff[j] >= '0' && buff[j] <= '9') // Reads the number.
+			{
+				str[i] = buff[j];
+				str[i + 1] = '\0';
+				i++;
+			}
+			else if (buff[j] == ' ') // Read lba.
+			{
+				strcpy(strLba, str);
+				i = 0;
+				strcpy(str, ""); // Clean the string.
+			}
+			else if (buff[j] == '\n') // Read lba and len.
 			{
 				vfs_write(fileOutput, "New line: ", 10, &offset);
-				vfs_write(fileOutput, str, strlen(str), &offset); // Main string.
+				vfs_write(fileOutput, strLba, strlen(strLba), &offset); // Lba.
+				vfs_write(fileOutput, " ", 1, &offset);
+				vfs_write(fileOutput, str, strlen(str), &offset); // Len.
 				vfs_write(fileOutput, "\n", 1, &offset);
 
 				itemRBTree = kmalloc(sizeof(*itemRBTree), GFP_KERNEL);
-				itemRBTree->value = atoiFor_uint64(str);
+				//itemRBTree->lbaMain = atoiFor_uint64(strLba);
+				kstrtoll(strLba, 10, &itemRBTree->lbaMain);
+				itemRBTree->lbaAux = endRWC;
+				//itemRBTree->length = atoiFor_uint64(str);
+				kstrtoll(str, 10, &itemRBTree->length);
+				endRWC += itemRBTree->length;
 				rbTreeInsert(&rbTree, itemRBTree);
 				
 				i = 0;
 				strcpy(str, ""); // Clean the string.
-			}
-			else 
-			{		
-				str[i] = buff[j];
-				str[i + 1] = '\0';
-				i++;
 			}
 		}
 	}
@@ -106,37 +119,18 @@ static int __init kread_init(void)
 	
 	printk("Root\n");
 	for (node = rb_first(&rbTree); node; node = rb_next(node))
-		printk("key=%lld\n", rb_entry(node, struct dataRBTree, node)->value);
-	printk("Pre-order\n");
-	printTree(&rbTree, -1);
-	printk("In-order\n");
-	printTree(&rbTree, 0);
-	printk("Post-order\n");
-	printTree(&rbTree, 1);
+		printk("lbaMain=%lld lbaAux=%lld length=%lld\n", 
+			rb_entry(node, struct dataRBTree, node)->lbaMain, 
+			rb_entry(node, struct dataRBTree, node)->lbaAux, 
+			rb_entry(node, struct dataRBTree, node)->length);
+	//printk("Pre-order\n");
+	//printTree(&rbTree, -1);
+	//printk("In-order\n");
+	//printTree(&rbTree, 0);
+	//printk("Post-order\n");
+	//printTree(&rbTree, 1);
 	
 	return 0; 
-}
-
-int atoiFor_uint64(char *str)
-{
-	uint64_t res = 0;
-    uint64_t sign = 1;
-    int i = 0;
-    
-    if (strlen(str) == 0)
-       return 0;
- 
-    // If number is negative, then update sign.
-    if (str[0] == '-')
-    {
-        sign = -1;
-        i++;
-    }
- 
-    for (; str[i] != '\0'; ++i)
-        res = res * 10 + str[i] - '0';
- 
-    return sign * res;
 }
 
 static void __exit kread_exit(void)

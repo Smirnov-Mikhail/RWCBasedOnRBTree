@@ -1,10 +1,13 @@
 #include <linux/rbtree.h>
+#include <linux/slab.h>
 
 typedef uint64_t ElementType;
 
 struct dataRBTree
 {
-	ElementType value;
+	ElementType lbaMain;
+	ElementType lbaAux;
+	ElementType length;
 	struct rb_node node;
 };
 
