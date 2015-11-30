@@ -108,7 +108,7 @@ void rbTreeInsert(struct rb_root *root, struct dataRBTree *data)
 			choice = 1;			
 			itemRBTree = kmalloc(sizeof(*itemRBTree), GFP_KERNEL);
 			itemRBTree->lbaMain = data->lbaMain + data->length;
-			itemRBTree->lbaAux = 0;
+			itemRBTree->lbaAux = data->lbaAux + data->length;
 			itemRBTree->length = this->lbaMain + this->length - data->lbaMain - data->length;
 			
 			this->length = data->lbaMain - this->lbaMain;
@@ -131,7 +131,8 @@ void rbTreeInsert(struct rb_root *root, struct dataRBTree *data)
 		else if (data->lbaMain + data->length > this->lbaMain && this->lbaMain >= data->lbaMain) // New to the left.
 		{
 			this->length -= data->lbaMain + data->length - this->lbaMain;
-			this->lbaMain = data->lbaMain + data->length; 
+			this->lbaMain = data->lbaMain + data->length;
+			this->lbaAux = this->lbaAux + data->length;
 			new = &((*new)->rb_left);
 		}			
   		else if (this->lbaMain > data->lbaMain)
