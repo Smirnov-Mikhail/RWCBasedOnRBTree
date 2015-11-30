@@ -13,7 +13,7 @@ static char* log = NULL;
 module_param(log, charp, 0); 
 
 #define BUFF_LEN 255 
-#define DEFNAME "inputFile.txt"; // Default value for input file.
+#define DEFNAME "inputFile9.txt"; // Default value for input file.
 char pathToInputFile[BUFF_LEN + 1] = DEFNAME;
 #define DEFLOG "./module.log" // Default value for output file.
 char pathToOutputFile[BUFF_LEN + 1] = DEFLOG;
@@ -36,7 +36,6 @@ static int __init kread_init(void)
 	mm_segment_t fs;
 	long move; // Step at reading.
 	
-	//int startRWC = 0;
 	int endRWC = 0;
 	// Initialization of rbTree.
 	struct dataRBTree *itemRBTree;
@@ -99,10 +98,8 @@ static int __init kread_init(void)
 				vfs_write(fileOutput, "\n", 1, &offset);
 
 				itemRBTree = kmalloc(sizeof(*itemRBTree), GFP_KERNEL);
-				//itemRBTree->lbaMain = atoiFor_uint64(strLba);
 				kstrtoll(strLba, 10, &itemRBTree->lbaMain);
 				itemRBTree->lbaAux = endRWC;
-				//itemRBTree->length = atoiFor_uint64(str);
 				kstrtoll(str, 10, &itemRBTree->length);
 				endRWC += itemRBTree->length;
 				rbTreeInsert(&rbTree, itemRBTree);

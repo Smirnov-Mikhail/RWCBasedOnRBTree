@@ -1,2 +1,4 @@
-lba=0 len=60
-lab=20 len=20
+lba=20 len=20
+lba=0 len=10
+lba=80 len=70
+lba=5 len=95
