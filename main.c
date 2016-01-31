@@ -13,7 +13,7 @@ static char* log = NULL;
 module_param(log, charp, 0); 
 
 #define BUFF_LEN 255 
-#define DEFNAME "inputFile9.txt"; // Default value for input file.
+#define DEFNAME "inputFile.txt"; // Default value for input file.
 char pathToInputFile[BUFF_LEN + 1] = DEFNAME;
 #define DEFLOG "./module.log" // Default value for output file.
 char pathToOutputFile[BUFF_LEN + 1] = DEFLOG;
@@ -29,6 +29,9 @@ static int __init kread_init(void)
 { 
 	unsigned int j = 0;
 	unsigned int i = 0;
+	struct timespec timeStart;
+	struct timespec timeEnd;
+	//ktime_t ktime = ktime_set(0, 200);//MS_TO_NS(200L));
 	size_t n;
 
 	loff_t offset = 0; // For write.
@@ -42,6 +45,7 @@ static int __init kread_init(void)
 	struct rb_root rbTree = RB_ROOT;
 	struct rb_node *node;
 
+	//ktime = ktime_set( 0, MS_TO_NS(200L));
 	fs = get_fs(); 
 	set_fs(get_ds()); 
 	
@@ -102,8 +106,11 @@ static int __init kread_init(void)
 				itemRBTree->lbaAux = endRWC;
 				kstrtoll(str, 10, &itemRBTree->length);
 				endRWC += itemRBTree->length;
+				timeStart = current_kernel_time();
 				rbTreeInsert(&rbTree, itemRBTree);
-				
+				//printk("tiktak: %lld\n", ktime.tv64);
+				timeEnd = current_kernel_time();
+				printk("Time: %ld\n", timeEnd.tv_nsec - timeStart.tv_nsec);
 				i = 0;
 				strcpy(str, ""); // Clean the string.
 			}

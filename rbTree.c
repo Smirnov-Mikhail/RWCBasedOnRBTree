@@ -21,11 +21,11 @@ struct dataRBTree *rbTreeSearch(struct rb_root *root, ElementType lbaMain)
 }
 
 // Insert element in RBTree without check intersections.
-void rbTreeInsertSimple(struct rb_root *root, struct dataRBTree *data)
+void rbTreeInsertSimple(struct rb_root *root, struct rb_node **new, struct dataRBTree *data)
 {
-	struct rb_node **new = &(root->rb_node), *parent = NULL;
+	struct rb_node *parent = NULL;
 
-  	while (*new) 
+  	while (*new)
   	{
   		struct dataRBTree *this = container_of(*new, struct dataRBTree, node);
 
@@ -42,9 +42,10 @@ void rbTreeInsertSimple(struct rb_root *root, struct dataRBTree *data)
 }
 
 // Removes excess pieces of memory.
-void rbTreeCut(struct rb_root *root, ElementType lbaMain, ElementType lbaAux, ElementType length)
+void rbTreeCut(struct rb_root *root, struct rb_node **new, ElementType lbaMain, ElementType lbaAux, ElementType length)
 {
-	struct rb_node **new = &(root->rb_node), *parent = NULL;
+	struct rb_node **newSecond = NULL;
+	struct rb_node *parent = NULL;
 	struct dataRBTree *itemRBTree = NULL;
 	int choice = 0;
 
@@ -59,15 +60,16 @@ void rbTreeCut(struct rb_root *root, ElementType lbaMain, ElementType lbaAux, El
 			itemRBTree = kmalloc(sizeof(*itemRBTree), GFP_KERNEL);
 			itemRBTree->lbaMain = lbaMain + length;
 			itemRBTree->lbaAux = 0;
-			itemRBTree->length = this->lbaMain + this->length - lbaMain - length ;
+			itemRBTree->length = this->lbaMain + this->length - lbaMain - length;
+			newSecond = new;
 			
 			this->length = lbaMain - lbaMain;
 			new = &((*new)->rb_right);
 		}
 		else if (lbaMain <= this->lbaMain && lbaMain + length >= this->lbaMain + this->length) // Old conteined in new.
 		{			
-			rbTreeCut(root, lbaMain, lbaAux, this->lbaMain - lbaMain);
-			rbTreeCut(root, this->lbaMain + this->length, lbaAux, lbaMain + length - this->lbaMain - this->length);
+			rbTreeCut(root, new, lbaMain, lbaAux, this->lbaMain - lbaMain);
+			rbTreeCut(root, new, this->lbaMain + this->length, lbaAux, lbaMain + length - this->lbaMain - this->length);
 			rb_erase(&this->node, root);
 			return;
 		}
@@ -89,12 +91,13 @@ void rbTreeCut(struct rb_root *root, ElementType lbaMain, ElementType lbaAux, El
   	}
   	
   	if (choice)
-		rbTreeInsertSimple(root, itemRBTree);
+		rbTreeInsertSimple(root, newSecond, itemRBTree);
 }
 
 void rbTreeInsert(struct rb_root *root, struct dataRBTree *data)
 {
 	struct rb_node **new = &(root->rb_node), *parent = NULL;
+	struct rb_node **newSecond = NULL;
 	struct dataRBTree *itemRBTree = NULL;
 	int choice = 0;
 	
@@ -110,14 +113,15 @@ void rbTreeInsert(struct rb_root *root, struct dataRBTree *data)
 			itemRBTree->lbaMain = data->lbaMain + data->length;
 			itemRBTree->lbaAux = data->lbaAux + data->length;
 			itemRBTree->length = this->lbaMain + this->length - data->lbaMain - data->length;
+			newSecond = new;
 			
 			this->length = data->lbaMain - this->lbaMain;
 			new = &((*new)->rb_right);
 		}
 		else if (data->lbaMain <= this->lbaMain && data->lbaMain + data->length >= this->lbaMain + this->length) // Old conteined in new.
 		{			
-			rbTreeCut(root, data->lbaMain, data->lbaAux, this->lbaMain - data->lbaMain);
-			rbTreeCut(root, this->lbaMain + this->length, data->lbaAux, data->lbaMain + data->length - this->lbaMain - this->length);
+			rbTreeCut(root, new, data->lbaMain, data->lbaAux, this->lbaMain - data->lbaMain);
+			rbTreeCut(root, new, this->lbaMain + this->length, data->lbaAux, data->lbaMain + data->length - this->lbaMain - this->length);
 			this->lbaMain = data->lbaMain;
 			this->lbaAux = data->lbaAux;
 			this->length = data->length;
@@ -147,7 +151,7 @@ void rbTreeInsert(struct rb_root *root, struct dataRBTree *data)
   	
   	
 	if (choice)
-		rbTreeInsertSimple(root, itemRBTree);
+		rbTreeInsertSimple(root, newSecond, itemRBTree);
 }
 
 void printNode(struct dataRBTree *data)
