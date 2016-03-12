@@ -29,8 +29,8 @@ static int __init kread_init(void)
 { 
 	unsigned int j = 0;
 	unsigned int i = 0;
-	struct timespec timeStart;
-	struct timespec timeEnd;
+	long long int timeStart = 0;
+	long long int timeEnd = 0;
 	//ktime_t ktime = ktime_set(0, 200);//MS_TO_NS(200L));
 	size_t n;
 
@@ -66,6 +66,7 @@ static int __init kread_init(void)
 		return -ENOENT;
 	
 	move = vfs_llseek(fileInput, numberOfBytes, 0); // 0 means SEEK_SET. (set in begin of file)
+	timeStart = ktime_to_ns(ktime_get());
 	while (1) 
 	{
 		n = vfs_read(fileInput, buff, move, &file_offset);
@@ -106,16 +107,14 @@ static int __init kread_init(void)
 				itemRBTree->lbaAux = endRWC;
 				kstrtoll(str, 10, &itemRBTree->length);
 				endRWC += itemRBTree->length;
-				timeStart = current_kernel_time();
 				rbTreeInsert(&rbTree, itemRBTree);
-				//printk("tiktak: %lld\n", ktime.tv64);
-				timeEnd = current_kernel_time();
-				printk("Time: %ld\n", timeEnd.tv_nsec - timeStart.tv_nsec);
 				i = 0;
 				strcpy(str, ""); // Clean the string.
 			}
 		}
 	}
+	timeEnd = ktime_to_ns(ktime_get());
+	printk("!!!Time: %lld\n", timeEnd - timeStart);
 	set_fs(fs);
 
 	filp_close(fileInput, NULL); // Close the input file.
