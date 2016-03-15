@@ -12,6 +12,7 @@
 #include <linux/ktime.h>
 #include "rbTree.h"
 #include "list.h"
+#include "hash.h"
 
 MODULE_LICENSE("GPL");
 

@@ -1,5 +1,4 @@
 #include "rbTree.h"
-#include "list.h"
 
 struct dataRBTree *rbTreeSearch(struct rb_root *root, ElementType lbaMain)
 {

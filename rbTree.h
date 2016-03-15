@@ -12,7 +12,7 @@ struct dataRBTree
 };
 
 // Searching an existing node for a value.
-struct dataRBTree *rbTreeSearch(struct rb_root *root, ElementType value);
+struct dataRBTree *rbTreeSearch(struct rb_root *root, ElementType lbaMain);
 
 // Insert value in a tree.
 void rbTreeInsert(struct rb_root *root, struct dataRBTree *new);
