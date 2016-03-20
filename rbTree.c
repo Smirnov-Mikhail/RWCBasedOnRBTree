@@ -41,13 +41,16 @@ void rbTreeInsertSimple(struct rb_root *root, struct rb_node **new, struct dataR
 }
 
 // Removes excess pieces of memory.
-void rbTreeCut(struct rb_root *root, struct rb_node **new, ElementType lbaMain, ElementType lbaAux, ElementType length)
+void rbTreeCorrect(struct rb_root *root, struct rb_node **new, ElementType lbaMain, ElementType lbaAux, ElementType length)
 {
 	struct rb_node **newSecond = NULL;
 	struct rb_node *parent = NULL;
 	struct dataRBTree *itemRBTree = NULL;
 	int choice = 0;
-
+	
+	if (new == NULL)
+		new = &(root->rb_node);
+		
   	while (*new) 
   	{
   		struct dataRBTree *this = container_of(*new, struct dataRBTree, node);
@@ -67,8 +70,8 @@ void rbTreeCut(struct rb_root *root, struct rb_node **new, ElementType lbaMain, 
 		}
 		else if (lbaMain <= this->lbaMain && lbaMain + length >= this->lbaMain + this->length) // Old conteined in new.
 		{			
-			rbTreeCut(root, new, lbaMain, lbaAux, this->lbaMain - lbaMain);
-			rbTreeCut(root, new, this->lbaMain + this->length, lbaAux, lbaMain + length - this->lbaMain - this->length);
+			rbTreeCorrect(root, new, lbaMain, lbaAux, this->lbaMain - lbaMain);
+			rbTreeCorrect(root, new, this->lbaMain + this->length, lbaAux, lbaMain + length - this->lbaMain - this->length);
 			rb_erase(&this->node, root);
 			return;
 		}
@@ -119,8 +122,8 @@ void rbTreeInsert(struct rb_root *root, struct dataRBTree *data)
 		}
 		else if (data->lbaMain <= this->lbaMain && data->lbaMain + data->length >= this->lbaMain + this->length) // Old conteined in new.
 		{			
-			rbTreeCut(root, new, data->lbaMain, data->lbaAux, this->lbaMain - data->lbaMain);
-			rbTreeCut(root, new, this->lbaMain + this->length, data->lbaAux, data->lbaMain + data->length - this->lbaMain - this->length);
+			rbTreeCorrect(root, new, data->lbaMain, data->lbaAux, this->lbaMain - data->lbaMain);
+			rbTreeCorrect(root, new, this->lbaMain + this->length, data->lbaAux, data->lbaMain + data->length - this->lbaMain - this->length);
 			this->lbaMain = data->lbaMain;
 			this->lbaAux = data->lbaAux;
 			this->length = data->length;
@@ -203,7 +206,7 @@ void printTreePostOrder(struct rb_node* node)
     }
 }
 
-void printTree(struct rb_root *root, int order)
+void rbTreePrint(struct rb_root *root, int order)
 {
     if (!root->rb_node)
         return;

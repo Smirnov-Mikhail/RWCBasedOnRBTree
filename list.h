@@ -1,4 +1,6 @@
-#include <linux/list.h>
+#pragma once
+
+#include <linux/list.h>	
 
 typedef uint64_t ElementType;
 

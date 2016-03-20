@@ -1,3 +1,5 @@
+#pragma once
+
 #include <linux/rbtree.h>
 #include <linux/slab.h>
 
@@ -18,4 +20,7 @@ struct dataRBTree *rbTreeSearch(struct rb_root *root, ElementType lbaMain);
 void rbTreeInsert(struct rb_root *root, struct dataRBTree *new);
 
 // Print tree. (Pre-order, In-order, Post-order or Level-order(not completed))
-void printTree(struct rb_root *root, int order);
+void rbTreePrint(struct rb_root *root, int order);
+
+// Correct tree (seq write or old conteined in new).
+void rbTreeCorrect(struct rb_root *root, struct rb_node **new, ElementType lbaMain, ElementType lbaAux, ElementType length);
