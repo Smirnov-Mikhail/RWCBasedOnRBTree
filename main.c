@@ -1,12 +1,12 @@
 #include "main.h"
-#include <linux/rbtree.h>	
+#include <linux/rbtree.h>
 
 // Number of bytes for reading.
 int numberOfBytes = 10;
 
 // Path to input file.
 static char* file = NULL; 
-module_param(file, charp, 0); 
+module_param(file, charp, 0);
 
 // Path to output file.
 static char* log = NULL; 
@@ -28,25 +28,31 @@ char str[BUFF_LEN + 1]; // Buffer for forming one element of rbtree.
 void tostring(char [], long long int);
 
 static int __init kread_init(void) 
-{ 
+{ 	
 	unsigned int j = 0;
 	unsigned int i = 0;
 	unsigned int state = 0; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	unsigned int choiceSeq = 0;
 	long long int timeStart = 0;
 	long long int timeEnd = 0;
-	//long long int result = 0;
 	size_t n;
 
 	loff_t offset = 0; // For write.
 	loff_t file_offset = 0; // For read.
 	mm_segment_t fs;
 	long move; // Step at reading.
-	
 	int endRWC = 0;
+	
 	// Initialization of rbTree.
-	struct dataRBTree *itemRBTree;
-	struct rb_root rbTree = RB_ROOT;
+	//struct dataRBTree *itemRBTree;
+	//struct rb_root rbTree = RB_ROOT;
 	//struct rb_node *node;
+	
+	// Initialization of hash table.
+	struct list_head hashList[numberBuckets];
+	struct dataListHash *itemHashTable;
+	for (i = 0; i < numberBuckets; ++i)
+		INIT_LIST_HEAD(&hashList[i]);
 
 	fs = get_fs(); 
 	set_fs(get_ds()); 
@@ -68,7 +74,7 @@ static int __init kread_init(void)
 		return -ENOENT;
 	
 	move = vfs_llseek(fileInput, numberOfBytes, 0); // 0 means SEEK_SET. (set in begin of file)
-	timeStart = ktime_to_ms(ktime_get());
+	i = 0;
 	while (1) 
 	{
 		n = vfs_read(fileInput, buff, move, &file_offset);
@@ -86,6 +92,8 @@ static int __init kread_init(void)
 		{
 			if (buff[j] == ' ' || buff[j] == ':')
 				continue;
+			else if (buff[j] == 'q')
+				choiceSeq = 1;
 			else if (buff[j] == 'l')
 				state = 1;
 			else if ((buff[j] == 'b' || buff[j] == 'e') && state == 1)
@@ -107,29 +115,46 @@ static int __init kread_init(void)
 			}
 			else if (state == 4 && !(buff[j] >= '0' && buff[j] <= '9')) // Read lba and len.
 			{
-				//vfs_write(fileOutput, "New line: ", 10, &offset);
-				//vfs_write(fileOutput, strLba, strlen(strLba), &offset); // Lba.
-				//vfs_write(fileOutput, " ", 1, &offset);
-				//vfs_write(fileOutput, str, strlen(str), &offset); // Len.
-				//vfs_write(fileOutput, "\n", 1, &offset);
-
-				itemRBTree = kmalloc(sizeof(*itemRBTree), GFP_KERNEL);
+				// Work with RBTree.
+				/*itemRBTree = kmalloc(sizeof(*itemRBTree), GFP_KERNEL);
 				kstrtoll(strLba, 10, &itemRBTree->lbaMain);
 				itemRBTree->lbaAux = endRWC;
 				kstrtoll(str, 10, &itemRBTree->length);
 				endRWC += itemRBTree->length;
 				
 				timeStart = ktime_to_ns(ktime_get());
-				rbTreeInsert(&rbTree, itemRBTree);
+				if (choiceSeq)
+					rbTreeCorrect(&rbTree, NULL, itemRBTree->lbaMain, itemRBTree->lbaAux, itemRBTree->length);
+				else
+					rbTreeInsert(&rbTree, itemRBTree);
 				timeEnd = ktime_to_ns(ktime_get());
 				tostring(str, (timeEnd - timeStart));
 				vfs_write(fileOutput, str, strlen(str), &offset);
 				vfs_write(fileOutput, "\n", 1, &offset);
-				printk("!!!Time: %lld\n", (timeEnd - timeStart));
+				printk("!!!Time: %lld\n", (timeEnd - timeStart));*/
+				
+				// Work with hash table.
+				itemHashTable = kmalloc(sizeof(*itemHashTable), GFP_KERNEL);
+				kstrtoll(strLba, 10, &itemHashTable->lbaMain);
+				itemHashTable->lbaAux = endRWC;
+				kstrtoll(str, 10, &itemHashTable->length);
+				endRWC += itemHashTable->length;
+				timeStart = ktime_to_ns(ktime_get());
+				//if (choiceSeq)
+					//rbTreeCorrect(&rbTree, NULL, itemRBTree->lbaMain, itemRBTree->lbaAux, itemRBTree->length);
+				//else
+				hashTableInsert(hashList, itemHashTable);
+				timeEnd = ktime_to_ns(ktime_get());
+				tostring(str, (timeEnd - timeStart));
+				
+				vfs_write(fileOutput, str, strlen(str), &offset);
+				vfs_write(fileOutput, "\n", 1, &offset);
+				printk("Time: %lld\n", (timeEnd - timeStart));
 				
 				i = 0;
 				strcpy(str, ""); // Clean the string.
 				state = 0; // Go to search 'l'.
+				choiceSeq = 0;
 			}
 		}
 	}
@@ -137,7 +162,8 @@ static int __init kread_init(void)
 
 	filp_close(fileInput, NULL); // Close the input file.
 	filp_close(fileOutput, NULL); // Close the output file.
-
+	
+	hashTablePrint(hashList);
 	/*printk("Root\n");
 	for (node = rb_first(&rbTree); node; node = rb_next(node))
 		printk("lbaMain=%lld lbaAux=%lld length=%lld\n", 
