@@ -142,10 +142,7 @@ static int __init kread_init(void)
 				kstrtoll(str, 10, &itemHashTable->length);
 				endRWC += itemHashTable->length;
 				timeStart = ktime_to_ns(ktime_get());
-				if (choiceSeq)
-					hashTableInsert(hashList, itemHashTable, 1);
-				else
-					hashTableInsert(hashList, itemHashTable, 0);
+				hashTableInsert(hashList, itemHashTable, choiceSeq);
 				timeEnd = ktime_to_ns(ktime_get());
 				tostring(str, (timeEnd - timeStart));
 				
