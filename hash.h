@@ -20,7 +20,7 @@ struct dataListHash
 void hashTableCorrect(struct list_head *hashList, int numberOfBucket, ElementType lbaMain, ElementType lbaAux, ElementType length);
 
 // Insert value in a hash table.
-void hashTableInsert(struct list_head *hashList, struct dataListHash *new);
+void hashTableInsert(struct list_head *hashList, struct dataListHash *new, int onlyCorrect);
 
 // Print hash table.
 void hashTablePrint(struct list_head *hashList);

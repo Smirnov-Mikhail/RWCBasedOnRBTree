@@ -1,6 +1,6 @@
 #include "hash.h"
 
-const int numberBuckets = 500;
+const int numberBuckets = 200000;
 const int MAX_RAND = 100;
 int errorCounter = 0;
 
@@ -71,7 +71,7 @@ void hashTableCorrect(struct list_head *hashList, int numberOfBucket, ElementTyp
 		hashTableInsertSimple(hashList, itemHashTable);
 }
 
-void hashTableInsert(struct list_head *hashList, struct dataListHash *new)
+void hashTableInsert(struct list_head *hashList, struct dataListHash *new, int onlyCorrect)
 {
 	// Calculate hash.
 	const int numberOfBucket = (new->lbaMain / MAX_RAND) % numberBuckets;
@@ -90,8 +90,9 @@ void hashTableInsert(struct list_head *hashList, struct dataListHash *new)
 		hashTableCorrect(hashList, 0, new->lbaMain, new->lbaAux, new->length);
 	else
 		hashTableCorrect(hashList, numberOfBucket + 1, new->lbaMain, new->lbaAux, new->length);
-
-	list_add(&new->list, &hashList[numberOfBucket]);
+	
+	if (!onlyCorrect)
+		list_add(&new->list, &hashList[numberOfBucket]);
 }
 
 void hashTablePrint(struct list_head *hashList)

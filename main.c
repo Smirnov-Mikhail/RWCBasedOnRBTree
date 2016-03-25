@@ -10,7 +10,7 @@ module_param(file, charp, 0);
 
 // Path to output file.
 static char* log = NULL; 
-module_param(log, charp, 0); 
+module_param(log, charp, 0);
 
 #define BUFF_LEN 255
 #define DEFNAME "32k.log"; // Default value for input file.
@@ -36,6 +36,7 @@ static int __init kread_init(void)
 	long long int timeStart = 0;
 	long long int timeEnd = 0;
 	size_t n;
+	int size = 0;
 
 	loff_t offset = 0; // For write.
 	loff_t file_offset = 0; // For read.
@@ -49,8 +50,10 @@ static int __init kread_init(void)
 	//struct rb_node *node;
 	
 	// Initialization of hash table.
-	struct list_head hashList[numberBuckets];
+	struct list_head *hashList;
 	struct dataListHash *itemHashTable;
+	size = numberBuckets * sizeof(*hashList);
+	hashList = kmalloc(size, GFP_KERNEL);
 	for (i = 0; i < numberBuckets; ++i)
 		INIT_LIST_HEAD(&hashList[i]);
 
@@ -121,7 +124,6 @@ static int __init kread_init(void)
 				itemRBTree->lbaAux = endRWC;
 				kstrtoll(str, 10, &itemRBTree->length);
 				endRWC += itemRBTree->length;
-				
 				timeStart = ktime_to_ns(ktime_get());
 				if (choiceSeq)
 					rbTreeCorrect(&rbTree, NULL, itemRBTree->lbaMain, itemRBTree->lbaAux, itemRBTree->length);
@@ -140,10 +142,10 @@ static int __init kread_init(void)
 				kstrtoll(str, 10, &itemHashTable->length);
 				endRWC += itemHashTable->length;
 				timeStart = ktime_to_ns(ktime_get());
-				//if (choiceSeq)
-					//rbTreeCorrect(&rbTree, NULL, itemRBTree->lbaMain, itemRBTree->lbaAux, itemRBTree->length);
-				//else
-				hashTableInsert(hashList, itemHashTable);
+				if (choiceSeq)
+					hashTableInsert(hashList, itemHashTable, 1);
+				else
+					hashTableInsert(hashList, itemHashTable, 0);
 				timeEnd = ktime_to_ns(ktime_get());
 				tostring(str, (timeEnd - timeStart));
 				
