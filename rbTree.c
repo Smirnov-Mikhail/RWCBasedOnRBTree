@@ -156,6 +156,21 @@ void rbTreeInsert(struct rb_root *root, struct dataRBTree *data)
 		rbTreeInsertSimple(root, newSecond, itemRBTree);
 }
 
+void removeDataFromRBTree(struct rb_root *root, long long int size)
+{
+	long long int currentSize = 0;
+	struct rb_node *node;
+	struct dataRBTree *this;// = container_of(*new, struct dataRBTree, node);
+	
+	while (currentSize < size)
+	{
+		node = rb_first(root);
+		this = container_of(node, struct dataRBTree, node);
+		currentSize += this->length;
+		rb_erase(node, root);
+	}
+}
+
 void printNode(struct dataRBTree *data)
 {
     printk("%lld\n", data->lbaMain);

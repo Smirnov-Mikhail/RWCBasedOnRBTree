@@ -24,3 +24,6 @@ void rbTreePrint(struct rb_root *root, int order);
 
 // Correct tree (seq write or old conteined in new).
 void rbTreeCorrect(struct rb_root *root, struct rb_node **new, ElementType lbaMain, ElementType lbaAux, ElementType length);
+
+// Remove data from RBTree.
+void removeDataFromRBTree(struct rb_root *root, long long int size);
