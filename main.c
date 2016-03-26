@@ -124,16 +124,27 @@ static int __init kread_init(void)
 				itemRBTree->lbaAux = endRWC;
 				kstrtoll(str, 10, &itemRBTree->length);
 				endRWC += itemRBTree->length;
-				timeStart = ktime_to_ns(ktime_get());
+				//timeStart = ktime_to_ns(ktime_get());
 				if (choiceSeq)
 					rbTreeCorrect(&rbTree, NULL, itemRBTree->lbaMain, itemRBTree->lbaAux, itemRBTree->length);
 				else
 					rbTreeInsert(&rbTree, itemRBTree);
-				timeEnd = ktime_to_ns(ktime_get());
-				tostring(str, (timeEnd - timeStart));
-				vfs_write(fileOutput, str, strlen(str), &offset);
-				vfs_write(fileOutput, "\n", 1, &offset);
-				printk("Time: %lld\n", (timeEnd - timeStart));
+				//timeEnd = ktime_to_ns(ktime_get());
+				//tostring(str, (timeEnd - timeStart));
+				//vfs_write(fileOutput, str, strlen(str), &offset);
+				//vfs_write(fileOutput, "\n", 1, &offset);
+				//printk("Time: %lld\n", (timeEnd - timeStart));
+				
+				if (countOfNodes > 1000)
+				{
+					timeStart = ktime_to_ns(ktime_get());
+					removeDataFromRBTree(&rbTree, 1000);
+					timeEnd = ktime_to_ns(ktime_get());
+					tostring(str, (timeEnd - timeStart));
+					vfs_write(fileOutput, str, strlen(str), &offset);
+					vfs_write(fileOutput, "\n", 1, &offset);
+					printk("Time: %lld\n", (timeEnd - timeStart));
+				}
 				
 				/*
 				// Work with hash table.
@@ -162,7 +173,7 @@ static int __init kread_init(void)
 	filp_close(fileInput, NULL); // Close the input file.
 	filp_close(fileOutput, NULL); // Close the output file.
 	
-	removeDataFromRBTree(&rbTree, 100);
+	//removeDataFromRBTree(&rbTree, 100);
 	
 	//hashTablePrint(hashList);
 	printk("Root\n");

@@ -5,6 +5,8 @@
 
 typedef uint64_t ElementType;
 
+extern unsigned long long int countOfNodes;
+
 struct dataRBTree
 {
 	ElementType lbaMain;

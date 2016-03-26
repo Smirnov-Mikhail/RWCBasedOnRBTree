@@ -1,5 +1,7 @@
 #include "rbTree.h"
 
+unsigned long long int countOfNodes = 0;
+
 struct dataRBTree *rbTreeSearch(struct rb_root *root, ElementType lbaMain)
 {
 	struct rb_node *node = root->rb_node;  // Top of the tree.
@@ -34,7 +36,8 @@ void rbTreeInsertSimple(struct rb_root *root, struct rb_node **new, struct dataR
   		else
   			new = &((*new)->rb_right);
   	}
-
+	
+	countOfNodes++;
   	// Add new node and rebalance tree.
   	rb_link_node(&data->node, parent, new);
   	rb_insert_color(&data->node, root);
@@ -127,6 +130,7 @@ void rbTreeInsert(struct rb_root *root, struct dataRBTree *data)
 			this->lbaMain = data->lbaMain;
 			this->lbaAux = data->lbaAux;
 			this->length = data->length;
+			countOfNodes--;
 			return;
 		}
 		else if (data->lbaMain < this->lbaMain + this->length && data->lbaMain + data->length >= this->lbaMain + this->length) // New to the right.
@@ -147,6 +151,7 @@ void rbTreeInsert(struct rb_root *root, struct dataRBTree *data)
   			new = &((*new)->rb_right);
   	}
 	
+	countOfNodes++;
   	// Add new node and rebalance tree.
   	rb_link_node(&data->node, parent, new);
   	rb_insert_color(&data->node, root);
@@ -162,12 +167,13 @@ void removeDataFromRBTree(struct rb_root *root, long long int size)
 	struct rb_node *node;
 	struct dataRBTree *this;// = container_of(*new, struct dataRBTree, node);
 	
-	while (currentSize < size)
+	while (currentSize < size && countOfNodes > 1)
 	{
 		node = rb_first(root);
 		this = container_of(node, struct dataRBTree, node);
 		currentSize += this->length;
 		rb_erase(node, root);
+		countOfNodes--;
 	}
 }
 
