@@ -13,7 +13,7 @@ static char* log = NULL;
 module_param(log, charp, 0);
 
 #define BUFF_LEN 255
-#define DEFNAME "32k.log"; // Default value for input file.
+#define DEFNAME "inputFile1.txt"; // Default value for input file.
 char pathToInputFile[BUFF_LEN + 1] = DEFNAME;
 #define DEFLOG "lol.txt";//./module.log" // Default value for output file.
 char pathToOutputFile[BUFF_LEN + 1] = DEFLOG;
@@ -44,18 +44,18 @@ static int __init kread_init(void)
 	int endRWC = 0;
 	
 	// Initialization of rbTree.
-	struct dataRBTree *itemRBTree;
+	/*struct dataRBTree *itemRBTree;
 	struct rb_root rbTree = RB_ROOT;
-	struct rb_node *node;
+	struct rb_node *node;*/
 	
-	/*// Initialization of hash table.
+	// Initialization of hash table.
 	int size = 0;
 	struct list_head *hashList;
 	struct dataListHash *itemHashTable;
 	size = numberBuckets * sizeof(*hashList);
 	hashList = kmalloc(size, GFP_KERNEL);
 	for (i = 0; i < numberBuckets; ++i)
-		INIT_LIST_HEAD(&hashList[i]);*/
+		INIT_LIST_HEAD(&hashList[i]);
 
 	fs = get_fs(); 
 	set_fs(get_ds()); 
@@ -119,34 +119,34 @@ static int __init kread_init(void)
 			else if (state == 4 && !(buff[j] >= '0' && buff[j] <= '9')) // Read lba and len.
 			{
 				// Work with RBTree.
-				itemRBTree = kmalloc(sizeof(*itemRBTree), GFP_KERNEL);
+				/*itemRBTree = kmalloc(sizeof(*itemRBTree), GFP_KERNEL);
 				kstrtoll(strLba, 10, &itemRBTree->lbaMain);
 				itemRBTree->lbaAux = endRWC;
 				kstrtoll(str, 10, &itemRBTree->length);
 				endRWC += itemRBTree->length;
-				//timeStart = ktime_to_ns(ktime_get());
+				timeStart = ktime_to_ns(ktime_get());
 				if (choiceSeq)
 					rbTreeCorrect(&rbTree, NULL, itemRBTree->lbaMain, itemRBTree->lbaAux, itemRBTree->length);
 				else
 					rbTreeInsert(&rbTree, itemRBTree);
-				//timeEnd = ktime_to_ns(ktime_get());
-				//tostring(str, (timeEnd - timeStart));
-				//vfs_write(fileOutput, str, strlen(str), &offset);
-				//vfs_write(fileOutput, "\n", 1, &offset);
-				//printk("Time: %lld\n", (timeEnd - timeStart));
+				timeEnd = ktime_to_ns(ktime_get());
+				tostring(str, (timeEnd - timeStart));
+				vfs_write(fileOutput, str, strlen(str), &offset);
+				vfs_write(fileOutput, "\n", 1, &offset);
+				printk("Time: %lld\n", (timeEnd - timeStart));
 				
 				if (countOfNodes > 1000)
 				{
-					timeStart = ktime_to_ns(ktime_get());
+					//timeStart = ktime_to_ns(ktime_get());
 					removeDataFromRBTree(&rbTree, 1000);
 					timeEnd = ktime_to_ns(ktime_get());
 					tostring(str, (timeEnd - timeStart));
 					vfs_write(fileOutput, str, strlen(str), &offset);
 					vfs_write(fileOutput, "\n", 1, &offset);
 					printk("Time: %lld\n", (timeEnd - timeStart));
-				}
+				}*/
 				
-				/*
+				
 				// Work with hash table.
 				itemHashTable = kmalloc(sizeof(*itemHashTable), GFP_KERNEL);
 				kstrtoll(strLba, 10, &itemHashTable->lbaMain);
@@ -159,7 +159,7 @@ static int __init kread_init(void)
 				tostring(str, (timeEnd - timeStart));
 				vfs_write(fileOutput, str, strlen(str), &offset);
 				vfs_write(fileOutput, "\n", 1, &offset);
-				printk("Time: %lld\n", (timeEnd - timeStart));*/
+				printk("Time: %lld\n", (timeEnd - timeStart));
 				
 				i = 0;
 				strcpy(str, ""); // Clean the string.
@@ -174,14 +174,15 @@ static int __init kread_init(void)
 	filp_close(fileOutput, NULL); // Close the output file.
 	
 	//removeDataFromRBTree(&rbTree, 100);
+	removeDataFromHashTable(hashList);
 	
-	//hashTablePrint(hashList);
-	printk("Root\n");
+	hashTablePrint(hashList);
+	/*printk("Root\n");
 	for (node = rb_first(&rbTree); node; node = rb_next(node))
 		printk("lbaMain=%lld lbaAux=%lld length=%lld\n", 
 			rb_entry(node, struct dataRBTree, node)->lbaMain, 
 			rb_entry(node, struct dataRBTree, node)->lbaAux, 
-			rb_entry(node, struct dataRBTree, node)->length);
+			rb_entry(node, struct dataRBTree, node)->length);*/
 	
 	return 0; 
 }

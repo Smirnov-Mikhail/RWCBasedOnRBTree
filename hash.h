@@ -4,6 +4,7 @@
 #include <linux/list.h>
 #include <linux/kernel.h>
 #include <linux/delay.h>
+#include <linux/list_sort.h>
 
 typedef uint64_t ElementType;
 extern const int numberBuckets;
@@ -24,6 +25,9 @@ void hashTableInsert(struct list_head *hashList, struct dataListHash *new, int o
 
 // Print hash table.
 void hashTablePrint(struct list_head *hashList);
+
+// Remove data from hash table.
+void removeDataFromHashTable(struct list_head *hashList);
 
 	/*struct dataListHash *v = NULL;
 	struct dataListHash *q = NULL;

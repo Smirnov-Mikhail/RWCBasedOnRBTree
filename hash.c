@@ -110,3 +110,92 @@ void hashTablePrint(struct list_head *hashList)
 		}
 	}
 }
+
+int cmp(const void *a, const void *b) 
+{ 
+	return ((struct dataListHash *)a)->lbaMain - ((struct dataListHash *)b)->lbaMain; 
+}
+
+int compare(void *priv, struct list_head *a, struct list_head *b) 
+{
+    struct dataListHash *personA = container_of(a, struct dataListHash , list);
+    struct dataListHash *personB = container_of(b, struct dataListHash , list);
+    /*int monthA = personA.month;
+    int monthB = personB.month;
+    int dayA = personA.day;
+    int dayB = personB.day;
+    int yearA = personA.year;
+    int yearB = personB.year;
+
+    if (yearA < yearB) {
+        return 1;
+    } else if (yearB < yearA) {
+        return -1;
+    } else {
+        if (monthA < monthB) {
+            return 1;
+        } else if (monthB < monthA) {
+            return -1;
+        } else {
+            if (dayA < dayB) {
+                return 1;
+            } else if (dayB < dayA) {
+                return -1;
+            } else {
+            return 0;
+            }
+        }
+    }*/
+    return personA->lbaMain - personB->lbaMain;
+}
+
+void removeDataFromHashTable(struct list_head *hashList)
+{
+	int i = 0;
+	struct list_head *iter = NULL, *iter_safe;
+	struct dataListHash *item = NULL;
+	struct dataListHash *itemForListForRemove = NULL;
+	LIST_HEAD(listForRemove);
+
+	for (i = 0; i < numberBuckets; ++i)
+	{		
+		list_for_each(iter, &hashList[i])
+		{
+			item = list_entry(iter, struct dataListHash, list);
+			itemForListForRemove = kmalloc(sizeof(*itemForListForRemove), GFP_KERNEL);
+			itemForListForRemove->lbaMain = item->lbaMain;
+			itemForListForRemove->lbaAux = item->lbaAux;
+			itemForListForRemove->length = item->length;
+			//printk("%d: %lld %lld %lld\n", i, itemForListForRemove->lbaMain, itemForListForRemove->length, itemForListForRemove->lbaAux);
+			list_add_tail(&itemForListForRemove->list, &listForRemove);
+		}
+	}
+	
+	list_sort(NULL, &listForRemove, compare);
+	
+	list_for_each_safe(iter, iter_safe, &listForRemove) 
+	{
+		item = list_entry(iter, struct dataListHash, list);
+		printk("!!! %lld %lld %lld\n", item->lbaMain, item->length, item->lbaAux);
+		list_del(iter);
+		kfree(item);
+	}
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
