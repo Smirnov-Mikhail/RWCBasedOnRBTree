@@ -1,6 +1,7 @@
 #include "hash.h"
 
 const int numberBuckets = 200000;
+unsigned long long int countOfNodesHashTable = 0;
 const int MAX_RAND = 100;
 int errorCounter = 0;
 
@@ -9,6 +10,7 @@ void hashTableInsertSimple(struct list_head *hashList, struct dataListHash *new)
 	// Calculate hash.
 	const int numberOfBucket = (new->lbaMain / MAX_RAND) % numberBuckets;
 
+	++countOfNodesHashTable;
 	list_add(&new->list, &hashList[numberOfBucket]);
 }
 
@@ -46,6 +48,7 @@ void hashTableCorrect(struct list_head *hashList, int numberOfBucket, ElementTyp
 			itemHashTable->lbaMain = this->lbaMain;
 			itemHashTable->lbaAux = this->lbaAux;
 			itemHashTable->length = this->length;
+			countOfNodesHashTable--;
 			list_del(iter);
 			kfree(this);
 			break;
@@ -92,7 +95,10 @@ void hashTableInsert(struct list_head *hashList, struct dataListHash *new, int o
 		hashTableCorrect(hashList, numberOfBucket + 1, new->lbaMain, new->lbaAux, new->length);
 	
 	if (!onlyCorrect)
+	{
+		++countOfNodesHashTable;
 		list_add(&new->list, &hashList[numberOfBucket]);
+	}
 }
 
 void hashTablePrint(struct list_head *hashList)
@@ -111,50 +117,26 @@ void hashTablePrint(struct list_head *hashList)
 	}
 }
 
-int cmp(const void *a, const void *b) 
-{ 
-	return ((struct dataListHash *)a)->lbaMain - ((struct dataListHash *)b)->lbaMain; 
-}
-
 int compare(void *priv, struct list_head *a, struct list_head *b) 
 {
     struct dataListHash *personA = container_of(a, struct dataListHash , list);
     struct dataListHash *personB = container_of(b, struct dataListHash , list);
-    /*int monthA = personA.month;
-    int monthB = personB.month;
-    int dayA = personA.day;
-    int dayB = personB.day;
-    int yearA = personA.year;
-    int yearB = personB.year;
 
-    if (yearA < yearB) {
-        return 1;
-    } else if (yearB < yearA) {
-        return -1;
-    } else {
-        if (monthA < monthB) {
-            return 1;
-        } else if (monthB < monthA) {
-            return -1;
-        } else {
-            if (dayA < dayB) {
-                return 1;
-            } else if (dayB < dayA) {
-                return -1;
-            } else {
-            return 0;
-            }
-        }
-    }*/
     return personA->lbaMain - personB->lbaMain;
 }
 
-void removeDataFromHashTable(struct list_head *hashList)
+void removeDataFromHashTable(struct list_head *hashList, long long int size)
 {
 	int i = 0;
-	struct list_head *iter = NULL, *iter_safe;
+	struct list_head *iter = NULL;
+	struct list_head *iter_safe = NULL;
+	struct list_head *iter2 = NULL;
+	struct list_head *iter_safe2 = NULL;
 	struct dataListHash *item = NULL;
+	struct dataListHash *item2 = NULL;
 	struct dataListHash *itemForListForRemove = NULL;
+	int numberOfBucket = 0;
+	long long int currentSize = 0;
 	LIST_HEAD(listForRemove);
 
 	for (i = 0; i < numberBuckets; ++i)
@@ -175,13 +157,26 @@ void removeDataFromHashTable(struct list_head *hashList)
 	
 	list_for_each_safe(iter, iter_safe, &listForRemove) 
 	{
+		if (currentSize >= size || countOfNodesHashTable <= 1)
+			return;
+		
 		item = list_entry(iter, struct dataListHash, list);
-		printk("!!! %lld %lld %lld\n", item->lbaMain, item->length, item->lbaAux);
+		//printk("!!! %lld %lld %lld\n", item->lbaMain, item->length, item->lbaAux);
+		numberOfBucket = (item->lbaMain / MAX_RAND) % numberBuckets;
+		list_for_each_safe(iter2, iter_safe2, &hashList[numberOfBucket])
+		{
+			item2 = list_entry(iter2, struct dataListHash, list);
+			currentSize += item2->length;
+			if (item->lbaMain == item2->lbaMain)
+			{
+				countOfNodesHashTable--;
+				list_del(iter2);
+				kfree(item2);
+			}
+		}
 		list_del(iter);
 		kfree(item);
 	}
-	
-	
 }
 
 

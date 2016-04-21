@@ -5,7 +5,7 @@
 
 typedef uint64_t ElementType;
 
-extern unsigned long long int countOfNodes;
+extern unsigned long long int countOfNodesRBTree;
 
 struct dataRBTree
 {

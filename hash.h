@@ -7,7 +7,9 @@
 #include <linux/list_sort.h>
 
 typedef uint64_t ElementType;
+
 extern const int numberBuckets;
+extern unsigned long long int countOfNodesHashTable;
 
 struct dataListHash
 {
@@ -27,7 +29,7 @@ void hashTableInsert(struct list_head *hashList, struct dataListHash *new, int o
 void hashTablePrint(struct list_head *hashList);
 
 // Remove data from hash table.
-void removeDataFromHashTable(struct list_head *hashList);
+void removeDataFromHashTable(struct list_head *hashList, long long int size);
 
 	/*struct dataListHash *v = NULL;
 	struct dataListHash *q = NULL;
